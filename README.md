@@ -1,29 +1,64 @@
 # RAG-to-SQL
 
-A small Streamlit application that demonstrates using a retrieval-augmented generation (RAG) style approach to convert natural-language questions into SQL, execute those queries against a local SQLite database, and return human-readable explanations of results using Google Gemini (Generative AI).
+A small Streamlit demo that converts plain-English questions into SQL, executes the generated SQL against a local SQLite database, and returns a human-friendly explanation of the results using Google Generative AI (Gemini).
 
-> Warning: This repository contains a sample `patient.db` SQLite database. Do NOT use real patient data or other sensitive personal data in this repository. The included database is intended for demonstration only.
+This repository is an experimental prototype intended to demonstrate prompt-to-SQL generation and how a model can help explain query results. It is not production-ready.
 
-## Repository structure
+---
 
-- app.py — Streamlit app that accepts a natural-language question, uses Google Gemini to generate SQL, runs the SQL against `patient.db`, and asks Gemini to generate a friendly explanation.
-- sql.py — Small scripts that demonstrate reading from SQLite databases into pandas (unused by the Streamlit app, example/utility).
-- patient.db — Sample SQLite database used by the app (committed for demo purposes).
-- requirements.txt — Python dependencies.
-- RAG .pptx — A presentation file (slides) related to the project.
-- .env — Environment file (not tracked with any secrets here in the repo snapshot).
-- venv/ — A committed virtual environment directory (should be removed from the repo; see Security & Cleanup below).
+## Features
 
-## What this does
+- Natural-language input via a Streamlit web UI.
+- Uses Google Generative AI (Gemini) to translate English questions into SQL statements tailored to the demo schema.
+- Executes the generated SQL against `patient.db` (SQLite) and returns results.
+- Uses Gemini again to produce a friendly, human-readable explanation of the query results.
 
-- Accepts an English question via a Streamlit UI.
-- Uses the Google Generative AI (Gemini) API to translate the question into an SQL statement that matches the expected schema.
-- Executes the generated SQL against `patient.db`.
-- Uses Gemini again to create a human-friendly summary/explanation of the query result.
+---
+
+## Quickstart
+
+1. Clone the repository:
+
+   git clone https://github.com/mudgalma/RAG-to-SQL.git
+   cd RAG-to-SQL
+
+2. (Optional) Create and activate a virtual environment:
+
+   python -m venv venv
+   source venv/bin/activate   # macOS / Linux
+   venv\Scripts\activate    # Windows
+
+3. Install dependencies:
+
+   pip install -r requirements.txt
+
+4. Add your Google Generative AI API key to a `.env` file in the repository root:
+
+   GOOGLE_API_KEY=your_google_api_key_here
+
+   Do NOT commit your real API key to the repository.
+
+5. Run the Streamlit app:
+
+   streamlit run app.py
+
+6. In the browser UI, type a question (examples below) and click "Ask the question".
+
+---
+
+## Example prompts
+
+- "Find records for Patient John Doe"
+- "Add a visit for Patient Jane Doe on 2024-12-27 with mild fever and paracetamol 500 mg"
+- "Show patients prescribed Paracetamol 500 mg"
+
+Notes: The demo will translate these to SQL and execute them. Be careful — INSERT/UPDATE/DELETE statements will modify `patient.db`.
+
+---
 
 ## Expected database schema
 
-The app is written to work with a table shaped like the following (named in prompts as `Sample_Healthcare_Data`):
+The app's internal prompt expects a table like `Sample_Healthcare_Data` with columns:
 
 - NAME — TEXT
 - AGE — INTEGER
@@ -31,57 +66,57 @@ The app is written to work with a table shaped like the following (named in prom
 - MEDICATION — TEXT
 - DATE — TEXT (YYYY-MM-DD)
 
-Note: The real `patient.db` bundled in the repo may use different table names; the app's prompt and SQL generation assume the schema above. Inspect `patient.db` with the sqlite3 CLI or a GUI tool if you need to adapt the prompt or table names.
+The bundled `patient.db` is a demo database. Inspect the actual schema before heavy use (for example: `sqlite3 patient.db "\.schema"`).
 
-## Requirements
+---
 
-- Python 3.8+
-- An API key for Google Generative AI (Gemini) with access to the `gemini-pro` model.
+## Files in this repository
 
-Install dependencies:
+- `app.py` — Main Streamlit application (prompt-to-SQL + execution + explanation).
+- `sql.py` — Small example scripts that show how to read SQLite tables into pandas (utility/example code).
+- `patient.db` — Example SQLite database (committed for demo purposes).
+- `requirements.txt` — Python dependencies.
+- `RAG .pptx` — Presentation slides related to the project.
+- `.env` — Environment file (not tracked with secrets here).
 
-pip install -r requirements.txt
+---
 
-## Environment
+## Security & safety warnings
 
-Create a `.env` file in the repo root (or set the environment variable directly) with:
+- Do NOT store or commit real patient data (PHI) or other sensitive information in this repository.
+- The prototype executes model-generated SQL directly against a local database. This is dangerous for production use — the model may produce unexpected or malicious SQL.
+- Add robust validation and allow-listing before executing any non-SELECT SQL in real applications. Consider executing only parameterized SELECT queries automatically and requiring manual review/confirmation for DML/DDL.
 
-GOOGLE_API_KEY=your_google_generative_ai_api_key
+---
 
-Do NOT commit secrets to the repository.
+## Recommended improvements
 
-## Run the demo
+- Remove the committed `venv/` directory and add it to `.gitignore` to reduce repo size and avoid accidental commits of environment artifacts.
+- Replace the committed `patient.db` with a small generator script (e.g., `scripts/generate_sample_db.py`) that builds a demo DB at runtime.
+- Add SQL parsing/validation to disallow dangerous statements or require user confirmation for DML/DDL.
+- Pin dependency versions in `requirements.txt`.
+- Add tests and a CI workflow to run linting and unit tests.
+- Add a LICENSE file to clarify reuse terms.
 
-1. Install requirements: `pip install -r requirements.txt`
-2. Ensure `patient.db` is present in the repo root (it is included here for demo purposes).
-3. Add your Google API key to `.env` as shown above.
-4. Start the Streamlit app:
+---
 
-streamlit run app.py
+## Development notes
 
-5. In the browser UI, type a natural-language question about the sample healthcare data (for example: "Find records for Patient X" or "Add a visit for Patient Y on 2024-12-27 with mild fever and paracetamol 500 mg") and click "Ask the question".
+- The app uses the `google-generativeai` Python package and the `gemini-pro` model name in code. Make sure your API key has the necessary access or change the model as required.
+- If the model produces SQL that references a different table name or schema, either adapt the prompt in `app.py` or inspect/rename your DB tables to match the prompt.
 
-If Gemini generates an UPDATE/INSERT/DELETE statement, the app will run it against the SQLite database — be cautious when experimenting.
-
-## Notes, limitations and suggestions
-
-- The current implementation relies on the model to produce valid SQL and does not fully validate or sanitize generated SQL. This is risky for production use. For real applications, implement strict validation, parameterization, and allow-listing of permitted SQL commands.
-- The app expects the schema described above. If your database differs, update the `prompt` in `app.py` and/or inspect and modify the SQL execution logic.
-- Committed virtual environments (`venv/`) and databases are discouraged in version control. Consider removing `venv/` and adding it to `.gitignore`.
-- The app uses Gemini Pro (`gemini-pro`) model in the code. Ensure your API key has appropriate access, or change the model name as needed.
-
-## Security
-
-- Do NOT put real PHI (Protected Health Information) or secrets in this repository.
-- Do validation and escaping of any generated SQL before executing it in production.
-
-## How to improve
-
-- Add SQL parsing and validation to accept only safe SELECT statements in read-only mode, or require explicit user confirmation for DML/DDL operations.
-- Replace the direct execution of generated SQL with a parameterized query builder or mapping layer.
-- Add unit tests and CI to verify the prompt-to-SQL behavior and database safety.
+---
 
 ## License
 
-This repository has no license file. Add a LICENSE if you want to specify usage terms.
+No license file is included. If you want this project to be open-source, add a `LICENSE` (for example, MIT or Apache-2.0).
 
+---
+
+If you'd like, I can now:
+
+- Add a `.gitignore` entry to exclude `venv/` and other artifacts.
+- Replace the committed `patient.db` with a small generator script and remove the large DB from the repo.
+- Pin versions in `requirements.txt` and add a simple GitHub Actions workflow to run linting/tests.
+
+Tell me which follow-up I should do and I will commit it.
