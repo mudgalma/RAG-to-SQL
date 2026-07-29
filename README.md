@@ -89,16 +89,6 @@ The bundled `patient.db` is a demo database. Inspect the actual schema before he
 
 ---
 
-## Recommended improvements
-
-- Remove the committed `venv/` directory and add it to `.gitignore` to reduce repo size and avoid accidental commits of environment artifacts.
-- Replace the committed `patient.db` with a small generator script (e.g., `scripts/generate_sample_db.py`) that builds a demo DB at runtime.
-- Add SQL parsing/validation to disallow dangerous statements or require user confirmation for DML/DDL.
-- Pin dependency versions in `requirements.txt`.
-- Add tests and a CI workflow to run linting and unit tests.
-- Add a LICENSE file to clarify reuse terms.
-
----
 
 ## Development notes
 
