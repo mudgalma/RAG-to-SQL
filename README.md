@@ -1,6 +1,6 @@
 # RAG-to-SQL
 
-A small Streamlit demo that converts plain-English questions into SQL, executes the generated SQL against a local SQLite database, and returns a human-friendly explanation of the results using Google Generative AI (Gemini).
+A demo Streamlit app that translates plain-English questions into SQL using Google's Generative AI (Gemini), executes the generated SQL against a local SQLite demo database, and returns a human-friendly explanation of the results.
 
 This repository is an experimental prototype intended to demonstrate prompt-to-SQL generation and how a model can help explain query results. It is not production-ready.
 
@@ -85,7 +85,7 @@ The bundled `patient.db` is a demo database. Inspect the actual schema before he
 
 - Do NOT store or commit real patient data (PHI) or other sensitive information in this repository.
 - The prototype executes model-generated SQL directly against a local database. This is dangerous for production use — the model may produce unexpected or malicious SQL.
-- Add robust validation and allow-listing before executing any non-SELECT SQL in real applications. Consider executing only parameterized SELECT queries automatically and requiring manual review/confirmation for DML/DDL.
+- Add robust validation and allow-listing before executing any non-SELECT SQL in real applications. Consider executing only parameterized SELECT queries automatically and requiring manual review/control for any data-modifying statements.
 
 ---
 
